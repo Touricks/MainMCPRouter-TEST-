@@ -63,5 +63,11 @@ def load_chat_model(
 
         return create_siliconflow_model(model)
 
+    # Handle Google GenAI models
+    if provider_lower == "google_genai":
+        from .models import create_google_genai_model
+
+        return create_google_genai_model(model)
+
     # Use standard langchain initialization for other providers
     return init_chat_model(model, model_provider=provider)

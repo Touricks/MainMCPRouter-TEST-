@@ -1,8 +1,11 @@
 """MCP Client setup and management for LangGraph ReAct Agent."""
 
 import logging
+import os
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, cast
 
+from dotenv import load_dotenv
 from langchain_mcp_adapters.client import (  # type: ignore[import-untyped]
     MultiServerMCPClient,
 )
@@ -24,6 +27,23 @@ MCP_SERVERS = {
     #     "url": "https://mcp.context7.com/sse",
     #     "transport": "sse",
     # },
+    "postgres": {
+        "command": "./toolbox",
+        "args": ["--prebuilt", "postgres", "--stdio"],
+        "transport": "stdio",
+        "env": {
+            "POSTGRES_HOST": "localhost",
+            "POSTGRES_PORT": "5433",
+            "POSTGRES_DATABASE": "AIGradeScope",
+            "POSTGRES_USER": "postgres",
+            "POSTGRES_PASSWORD": "secret",
+        },
+    },
+    "nl2json": {
+        "command": "python",
+        "args": ["src/common/models/mcp-nl2json.py"],
+        "transport": "stdio",
+    }
 }
 
 
@@ -100,6 +120,16 @@ async def get_mcp_tools(server_name: str) -> List[Callable[..., Any]]:
 async def get_deepwiki_tools() -> List[Callable[..., Any]]:
     """Get DeepWiki MCP tools."""
     return await get_mcp_tools("deepwiki")
+
+
+async def get_postgres_tools() -> List[Callable[..., Any]]:
+    """Get Postgres MCP tools."""
+    return await get_mcp_tools("postgres")
+
+
+async def get_nl2json_tools() -> List[Callable[..., Any]]:
+    """Get nl2json MCP tools."""
+    return await get_mcp_tools("nl2json")
 
 
 async def get_all_mcp_tools() -> List[Callable[..., Any]]:

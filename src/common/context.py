@@ -45,6 +45,22 @@ class Context:
         },
     )
 
+    enable_postgres: bool = field(
+        default=False,
+        metadata={
+            "description": "Whether to enable the Postgres MCP tool for database operations.",
+            "json_schema_extra": {"langgraph_nodes": ["tools"]},
+        },
+    )
+
+    enable_nl2json: bool = field(
+        default=False,
+        metadata={
+            "description": "Whether to enable the nl2json MCP tool for converting natural language to JSON.",
+            "json_schema_extra": {"langgraph_nodes": ["tools"]},
+        },
+    )
+
     def __post_init__(self) -> None:
         """Fetch env vars for attributes that were not passed as args."""
         import os

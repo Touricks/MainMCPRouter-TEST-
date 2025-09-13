@@ -13,7 +13,7 @@ from langchain_tavily import TavilySearch
 from langgraph.runtime import get_runtime
 
 from common.context import Context
-from common.mcp import get_deepwiki_tools
+from common.mcp import get_deepwiki_tools, get_nl2json_tools, get_postgres_tools
 
 logger = logging.getLogger(__name__)
 
@@ -40,5 +40,15 @@ async def get_tools() -> List[Callable[..., Any]]:
         deepwiki_tools = await get_deepwiki_tools()
         tools.extend(deepwiki_tools)
         logger.info(f"Loaded {len(deepwiki_tools)} deepwiki tools")
+
+    if runtime.context.enable_postgres:
+        postgres_tools = await get_postgres_tools()
+        tools.extend(postgres_tools)
+        logger.info(f"Loaded {len(postgres_tools)} postgres tools")
+
+    if runtime.context.enable_nl2json:
+        nl2json_tools = await get_nl2json_tools()
+        tools.extend(nl2json_tools)
+        logger.info(f"Loaded {len(nl2json_tools)} nl2json tools")
 
     return tools
