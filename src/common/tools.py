@@ -13,7 +13,12 @@ from langchain_tavily import TavilySearch
 from langgraph.runtime import get_runtime
 
 from common.context import Context
-from common.mcp import get_deepwiki_tools, get_nl2json_tools, get_postgres_tools
+from common.mcp import (
+    MCP_SERVERS,
+    get_deepwiki_tools,
+    get_nl2json_tools,
+    get_postgres_tools,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +35,36 @@ async def web_search(query: str) -> Optional[dict[str, Any]]:
     return cast(dict[str, Any], await wrapped.ainvoke({"query": query}))
 
 
+async def get_mcp_server_info() -> dict[str, Any]:
+    """Get information about configured MCP servers.
+
+    This function returns details about the MCP servers configured in the codebase,
+    including server count, names, and transport types. Use this when asked about
+    MCP servers in the system configuration.
+    """
+    server_info: dict[str, Any] = {
+        "total_servers": len(MCP_SERVERS),
+        "server_names": list(MCP_SERVERS.keys()),
+        "servers": {},
+    }
+
+    for name, config in MCP_SERVERS.items():
+        transport = config.get("transport", "unknown")
+        server_detail: dict[str, Any] = {"transport": transport}
+
+        if "url" in config:
+            server_detail["url"] = config["url"]
+        if "command" in config:
+            server_detail["command"] = config["command"]
+
+        server_info["servers"][name] = server_detail
+
+    return server_info
+
+
 async def get_tools() -> List[Callable[..., Any]]:
     """Get all available tools based on configuration."""
-    tools = [web_search]
+    tools: List[Callable[..., Any]] = [web_search, get_mcp_server_info]
 
     runtime = get_runtime(Context)
 

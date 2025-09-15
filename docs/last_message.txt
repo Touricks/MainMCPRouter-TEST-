@@ -1,0 +1,77 @@
+AIMessage 的核心字段
+  必需/主要字段：
+
+  last_message.content      # 字符串：AI回复的主要文本内容
+  last_message.id          # 可选字符串：消息的唯一标识符
+  last_message.tool_calls  # 列表：AI要调用的工具列表
+
+  可选/元数据字段：
+
+  last_message.additional_kwargs    # 字典：额外的参数
+  last_message.response_metadata   # 字典：响应元数据（token使用量、模型名等）
+  last_message.usage_metadata     # 字典：token使用信息
+  last_message.example            # 布尔值：是否为示例消息
+
+  在条件边中的使用模式
+
+  1. 基本检查模式（你的代码中）：
+
+  def route_model_output(state: State) -> Literal["__end__", "tools"]:
+      last_message = state.messages[-1]  # 获取最后一条消息
+
+      # 检查消息类型
+      if not isinstance(last_message, AIMessage):
+          raise ValueError(f"Expected AIMessage")
+
+      # 检查是否有工具调用
+      if not last_message.tool_calls:
+          return "__end__"    # 没有工具调用 = 最终回答
+      return "tools"          # 有工具调用 = 需要执行工具
+
+  2. tool_calls 的结构：
+
+  # tool_calls 是一个列表，每个元素是字典：
+  last_message.tool_calls = [
+      {
+          'name': 'web_search',           # 工具名称
+          'args': {'query': 'Python'},    # 工具参数
+          'id': 'call_123',               # 调用ID
+          'type': 'tool_call'             # 类型标识
+      }
+  ]
+
+  3. 高级检查模式：
+
+  def advanced_router(state: State) -> str:
+      last_message = state.messages[-1]
+
+      # 检查消息类型
+      if isinstance(last_message, AIMessage):
+
+          # 检查内容关键词
+          content = last_message.content.lower()
+          if "error" in content:
+              return "error_handler"
+
+          # 检查工具调用数量
+          if last_message.tool_calls:
+              if len(last_message.tool_calls) > 3:
+                  return "too_many_tools_handler"
+              return "tools"
+
+          # 检查置信度（如果在content中）
+          if "CONFIDENCE: LOW" in last_message.content:
+              return "quality_check"
+
+      return "__end__"
+
+  4. 元数据访问：
+
+  # 检查token使用情况
+  if last_message.response_metadata:
+      token_count = last_message.response_metadata.get('token_usage', {}).get('total_tokens', 0)
+      if token_count > 1000:
+          return "long_response_handler"
+
+  # 检查模型信息
+  model_name = last_message.response_metadata.get('model_name', 'unknown')

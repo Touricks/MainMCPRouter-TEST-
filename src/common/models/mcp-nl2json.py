@@ -22,7 +22,9 @@ mcp = FastMCP("nl2json")
 
 
 @mcp.tool()
-def nl_to_json(text: str, schema: Dict[str, Any], prompt: str = "", strict: bool = True) -> Dict[str, Any]:
+def nl_to_json(
+    text: str, schema: Dict[str, Any], prompt: str = "", strict: bool = True
+) -> Dict[str, Any]:
     """Convert natural language to JSON using Gemini API.
 
     Args:
@@ -93,6 +95,7 @@ def nl_to_json(text: str, schema: Dict[str, Any], prompt: str = "", strict: bool
             raise Exception(error_msg)
         logger.warning(error_msg)
         return {}
+
 
 if __name__ == "__main__":
     mcp.run()  # 默认即 stdio

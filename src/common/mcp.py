@@ -1,23 +1,21 @@
 """MCP Client setup and management for LangGraph ReAct Agent."""
 
 import logging
-import os
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, cast
 
-from dotenv import load_dotenv
 from langchain_mcp_adapters.client import (  # type: ignore[import-untyped]
     MultiServerMCPClient,
 )
 
 logger = logging.getLogger(__name__)
 
+
 # Global MCP client and tools cache
 _mcp_client: Optional[MultiServerMCPClient] = None
 _mcp_tools_cache: Dict[str, List[Callable[..., Any]]] = {}
 
 # MCP Server configurations
-MCP_SERVERS = {
+MCP_SERVERS: Dict[str, Dict[str, Any]] = {
     "deepwiki": {
         "url": "https://mcp.deepwiki.com/mcp",
         "transport": "streamable_http",
@@ -43,7 +41,7 @@ MCP_SERVERS = {
         "command": "python",
         "args": ["src/common/models/mcp-nl2json.py"],
         "transport": "stdio",
-    }
+    },
 }
 
 
